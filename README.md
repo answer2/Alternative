@@ -1,4 +1,4 @@
-# Alternative [![LICENSE](https://img.shields.io/badge/license-Apache-2.0-blue.svg)](https://github.com/answer2/Alternative/blob/main/LICENSE)
+# Alternative [![LICENSE](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://github.com/answer2/Alternative/blob/main/LICENSE)
 
 
 ## Credits
