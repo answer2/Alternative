@@ -14,21 +14,21 @@ Note : The Constructor is currently unable to hook, which may be limited by the 
 
 ## Usage
 Example 1: 
-            ```java
-            AlternativeFramework.addStubAndHookMethod(Toast.class, "makeText", Context.class, CharSequence.class, int.class, 
-            new MethodHook(){
-                    @Override
-                    public void beforeMethod(MethodHookParam params) {
-                        Log.i(TAG, "Args: " + Arrays.toString(params.args));
-                        params.args[1]="Hello";
-                    }
+```java
+AlternativeFramework.addStubAndHookMethod(Toast.class, "makeText", Context.class, CharSequence.class, int.class, 
+new MethodHook(){
+        @Override
+        public void beforeMethod(MethodHookParam params) {
+            Log.i(TAG, "Args: " + Arrays.toString(params.args));
+            params.args[1]="Hello";
+        }
 
-                    @Override
-                    public void afterMethod(MethodHookParam params) {
-                        Log.i(TAG, "After " + params.thisObject);
-                    }
-            });
-            ```
+        @Override
+        public void afterMethod(MethodHookParam params) {
+            Log.i(TAG, "After " + params.thisObject);
+        }
+});
+```
 
 ## Credits
 - [SandHook](https://github.com/ganyao114/SandHook)
