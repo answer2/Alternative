@@ -1,6 +1,7 @@
 # Alternative
 
-Dynamic java method hook framework on ART.
+- Dynamic java method hook framework on ART.
+- The principle of this framework is implemented through unsafe
 
 ## Why Alternative
 
@@ -8,12 +9,12 @@ Dynamic java method hook framework on ART.
 
 ## Introduction
 
-Alternative is a dynamic java method hook framework on ART runtime
+- Alternative is a dynamic java method hook framework on ART runtime
 
-There are many issues with this framework, please provide me with suggestions.
-You can send an email to `nswera929@gmail.com` or create issues
+- There are many issues with this framework, please provide me with suggestions.
+- You can send an email to `nswera929@gmail.com` or create issues
 
-Note : The Constructor is currently unable to hook, which may be limited by the principles of this framework 
+- Note : The Constructor is currently unable to hook, which may be limited by the principles of this framework 
 
 ## Usage
 Example 1: 
