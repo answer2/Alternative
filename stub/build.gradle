@@ -1,0 +1,12 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'dev.answer.alternative.stub'
+    compileSdk 33
+    
+    buildFeatures {
+        buildConfig = false
+    }
+}

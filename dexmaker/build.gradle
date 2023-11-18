@@ -1,0 +1,16 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'dev.answer.alternative.dexmaker'
+    compileSdk 33
+    
+    buildFeatures {
+        buildConfig = false
+    }
+    
+    dependencies{
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    }
+}

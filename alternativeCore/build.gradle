@@ -1,0 +1,19 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+
+    namespace 'dev.answer.alternative.core'
+    compileSdk 33
+    
+    buildFeatures {
+        buildConfig = false
+    }
+    
+    dependencies{
+        implementation project(":stub")
+        implementation project(":dexmaker")
+        implementation("androidx.appcompat:appcompat:1.6.1")
+    }
+}
