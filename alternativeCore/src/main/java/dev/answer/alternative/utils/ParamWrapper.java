@@ -1,11 +1,11 @@
 package dev.answer.alternative.utils;
-import dalvik.system.VMRuntime;
+
 import dev.answer.alternative.AlternativeFramework;
 
 public class ParamWrapper {
     
     public static Object addressToObject(Class objectType, long address) {
-        if (VMRuntime.getRuntime().is64Bit()) {
+        if (AlternativeFramework.is64Bit()) {
             return addressToObject64(objectType, address);
         } else {
             return addressToObject32(objectType, (int) address);
@@ -62,7 +62,7 @@ public class ParamWrapper {
     
 
     public static long objectToAddress(Class objectType, Object object) {
-        if (VMRuntime.getRuntime().is64Bit()) {
+        if (AlternativeFramework.is64Bit()) {
             return objectToAddress64(objectType, object);
         } else {
             return objectToAddress32(objectType, object);

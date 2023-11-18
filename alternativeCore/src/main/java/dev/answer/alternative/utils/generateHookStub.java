@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import dalvik.system.DexPathList;
 import java.util.Arrays;
 import dalvik.system.DexClassLoader;
 import java.net.URL;
@@ -57,41 +56,49 @@ public class generateHookStub {
     }
 
     
-    public static Class<?> generateConstructor(Constructor method) throws Exception {
+    
+
+    public static Method generateConstructor(Constructor method) throws Exception {
         DexMaker dexMaker = new DexMaker();
 
-        Class superClazz = method.getDeclaringClass().getSuperclass();
+        TypeId<?> ReturnId = TypeId.OBJECT;
+        Class<?>[] parameterTypes = method.getParameterTypes();
 
-        String Clazz = "L" + MethodUtils.getDeclaringClass(method.getDeclaringClass());
+        String[] names = method.getName().split("\\.");
 
-        TypeId<?> declaringType = TypeId.get(Clazz + "$stub;");
-        dexMaker.declare(declaringType, method.getName() + "$stub.generated", Modifier.PUBLIC, superClazz == null ? TypeId.OBJECT: TypeId.get(superClazz));
+        String methodName = names[names.length - 1];
+
+        TypeId<?> declaringType = TypeId.get("Ldev/answer/alternative/framework/" + methodName + "$stub;");
+        dexMaker.declare(declaringType, methodName + "$stub.generated", Modifier.PUBLIC, TypeId.get(method.getDeclaringClass()));
 
         TypeId<?> HookStubManagerType = TypeId.get(HookStubManager.class);
         TypeId<?> ClassesType = TypeId.get(Class[].class);
         TypeId<?> ObjectsType = TypeId.get(Object[].class);
 
-        MethodId<?,?> stubMethodId = (method.getParameterTypes() == null) ? declaringType.getConstructor()
-            : declaringType.getConstructor(classesToTypes(method.getParameterTypes()));
+        MethodId<?,?> stubMethodId = (parameterTypes == null) ? declaringType.getMethod(ReturnId, methodName)
+            : declaringType.getMethod(ReturnId, methodName, classesToTypes(parameterTypes));
+
         MethodId hookBridge_Static = HookStubManagerType.getMethod(TypeId.OBJECT, "hookBridge", TypeId.OBJECT, ClassesType, ObjectsType);
 
-        Code code = dexMaker.declare(stubMethodId, method.getModifiers());
+        int methodModifers = method.getModifiers();
 
-        Class[] classes = method.getParameterTypes();
+        if (Modifier.isAbstract(methodModifers)) methodModifers &= ~ Modifier.ABSTRACT;
+
+        Code code = dexMaker.declare(stubMethodId, methodModifers);
+
+        Class<?>[] classes = parameterTypes;
         TypeId<?>[] argsTypes = classesToTypes(classes);
+
         List<MethodInfo> infoList = new ArrayList<>();
-        int length = method.getParameterTypes() != null ? method.getParameterTypes().length : 0;
+        int length = parameterTypes != null ? parameterTypes.length : 0;
 
 
         Local<Integer> parameterTypeLength = code.newLocal(TypeId.INT);
         Local<Object> NulllLocal = code.newLocal(TypeId.OBJECT);
-        // Local<Object> thisObjcet =   (Local<Object>) code.newLocal(TypeId.OBJECT);
-
-        Local<?> thisRef = code.getThis(declaringType);
-
+        Local<Object> thisObjcetLocal = code.newLocal(TypeId.OBJECT);
         Local<Class[]> ClassesLocal = code.newLocal(TypeId.get(Class[].class));
         Local<?> argsLocal = code.newLocal(TypeId.get(Object[].class));
-        Local<?> local = code.newLocal(TypeId.OBJECT);
+
 
         for (int i = 0; classes.length > i;i++) {
             Local<Integer> indexLocal = code.newLocal(TypeId.INT);
@@ -101,6 +108,8 @@ public class generateHookStub {
             infoList.add(new MethodInfo(indexLocal, classLocal, argLocal, instance));
         }
 
+        Local<?> local = code.newLocal(TypeId.OBJECT);
+        Local<?> resultLocal = code.newLocal(ReturnId);
 
         code.loadConstant(NulllLocal, null);
         code.loadConstant(parameterTypeLength, length);
@@ -109,6 +118,7 @@ public class generateHookStub {
 
         for (int i = 0; classes.length > i;i++) {
             MethodInfo info = infoList.get(i);
+
             Local<Integer> indexLocal = info.index;
             Local<?> classLocal = info.classLocal;
             Local<?> argLocal = info.argLocal;
@@ -118,40 +128,41 @@ public class generateHookStub {
                 code.newInstance(instance, method_ , argLocal);
                 argLocal = instance;
             }
-            
+
             code.loadConstant(indexLocal, Integer.valueOf(i));
             code.loadConstant((Local<Class>)classLocal, (Class)classes[i]);
+
             code.aput(ClassesLocal, indexLocal, classLocal);
             code.aput(argsLocal, indexLocal, argLocal);
         }
 
-        code.invokeDirect(TypeId.OBJECT.getConstructor(), null, thisRef);
 
-        // thisObjcet = (Local<Object>)code.getThis(declaringType);
+        if (Modifier.isStatic(method.getModifiers()) || parameterTypes == null) {
+            code.loadConstant(thisObjcetLocal, null);
+        } else {
+            thisObjcetLocal = (Local<Object>)code.getThis(declaringType);
+        }
 
-        code.invokeStatic(hookBridge_Static, local, thisRef, ClassesLocal, argsLocal);
 
+        if (Modifier.isStatic(method.getModifiers())) {
+            code.invokeStatic(hookBridge_Static, local, NulllLocal, ClassesLocal, argsLocal);
+        } else {
+            code.invokeStatic(hookBridge_Static, local, thisObjcetLocal, ClassesLocal, argsLocal);
+        }
 
-        code.returnVoid();
+        code.cast_(local, resultLocal); //魔改的方法
+        code.returnValue(resultLocal);
 
-        
         byte[] bufs = dexMaker.generate();
-        /*
-        FileOutputStream foss = new java.io.FileOutputStream("/sdcard/Download/ddc.dex");
-        foss.write(bufs);
-        foss.close();*/
-
+        
         generateHookStub instance = new generateHookStub();
 
-        //System.out.println(instance.getClass().getClassLoader());
-
         Object dexfile = createDexFile(new ByteBuffer[]{ByteBuffer.wrap(bufs)}, instance.getClass().getClassLoader(), null);
-        Class<?> clazz = loadClass(dexfile,  "" + method.getName() + "$stub" , instance.getClass().getClassLoader());
+        Class<?> clazz_ = loadClass(dexfile,  "dev.answer.alternative.framework." + methodName + "$stub" , instance.getClass().getClassLoader());
 
-        return clazz;
+        return clazz_.getDeclaredMethod(methodName, parameterTypes);
     }
 
-    
 
 
     public static Class<?> generateMethod(Method method) throws Exception {

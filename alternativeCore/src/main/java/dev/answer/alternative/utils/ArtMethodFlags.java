@@ -29,4 +29,30 @@ public class ArtMethodFlags{
     public static final int kAccFastNative =            0x00080000;  // method (runtime; native only)
     public static final int kAccCriticalNative =        0x00200000;  // method (runtime; native only)
 
+    public static final int kPublic = 0x0001;
+    public static final int kPrivate = 0x0002;
+    public static final int kProtected = 0x0004;
+    public static final int kStatic = 0x0008;
+    public static final int kFinal = 0x0010;
+    public static final int kSynchronized = 0x0020;
+    public static final int kNative = 0x0100;
+    public static final int kConstructor = 0x00010000;
+    public static final int kDeclaredSynchronized = 0x00020000;
+    public static final int kSkipAccessChecks = 0x00080000;
+    public static final int kMiranda = 0x00200000;
+    public static final int kFastNative = 0x00080000;
+    public static final int kCriticalNative = 0x00200000;
+    public static final int kDontInline_M = 0x00400000;
+    public static final int kCompileDontBother_N = 0x01000000;
+    public static final int kCompileDontBother_O_MR1 = 0x02000000;
+    public static final int kPreCompiled_R = 0x00200000;
+
+    // This value from commit https://android-review.googlesource.com/c/platform/art/+/1646010
+    // We skipped commit https://android-review.googlesource.com/c/platform/art/+/1645449
+    public static final int kPreCompiled_S = 0x00800000;
+    public static final int kSingleImplementation = 0x08000000;
+    public static final int kPublicApi = 0x10000000;
+    public static final int kCorePlatformApi = 0x20000000;
+    public static final int kFastInterpreterToInterpreterInvoke = 0x40000000;
+    
 }

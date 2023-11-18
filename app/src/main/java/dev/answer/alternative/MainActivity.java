@@ -10,14 +10,26 @@ import android.os.Bundle;
 import dev.answer.alternative.callback.MethodHook;
 import dev.answer.alternative.databinding.ActivityMainBinding;
 import java.util.Arrays;
+import android.util.Log;
+
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
+    
+    public static final String TAG = "MainActivity-Log";
+    
+    public MainActivity(){
+        
+    }
+
+    public MainActivity(String message){
+        Log.d(TAG, message);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         
-                // Initial Hook
+        // Initial Hook
         init();
         super.onCreate(savedInstanceState);
         
@@ -30,16 +42,30 @@ public class MainActivity extends AppCompatActivity {
         
         Toast.makeText(this,"你好",Toast.LENGTH_LONG).show();
         
+        new MainActivity("Hello");
+        
     }
     
     public static void init(){
+    
+        AlternativeFramework.addStubAndHookConstructor(MainActivity.class, String.class,  new MethodHook(){
+                    @Override
+                    public void beforeMethod(MethodHookParam params) {
+                        Log.d(TAG, "This before");
+                    }
+                    
+                    @Override
+                    public void afterMethod(MethodHookParam params) {
+                        Log.d(TAG, "This after");
+                    }
+                });
+    
         AlternativeFramework.addStubAndHookMethod(Toast.class, "makeText", Context.class, CharSequence.class, int.class, 
             new MethodHook(){
                     @Override
                     public void beforeMethod(MethodHookParam params) {
-                    
-                        System.out.println(Arrays.toString(params.args));
-                    params.args[1]="Hello";
+                      System.out.println(Arrays.toString(params.args));
+                      params.args[1]="Hello";
                     }
 
                     @Override
@@ -52,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
             new MethodHook(){
                     @Override
                     public void beforeMethod(MethodHookParam params) {
-                    
                         System.out.println(Arrays.toString(params.args));
                     
                     }

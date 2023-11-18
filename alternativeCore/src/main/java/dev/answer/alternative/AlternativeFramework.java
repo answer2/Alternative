@@ -1,7 +1,6 @@
 package dev.answer.alternative;
 
 import android.os.Build;
-import dalvik.system.VMRuntime;
 import dev.answer.alternative.callback.MethodHook;
 import dev.answer.alternative.config.AlternativeConfig;
 import dev.answer.alternative.config.BlackList;
@@ -27,6 +26,8 @@ import dalvik.system.BaseDexClassLoader;
 import java.util.List;
 import java.util.ArrayList;
 import android.view.View;
+import dev.answer.alternative.utils.HiddenApiBypass;
+
 
 public class AlternativeFramework {
 
@@ -45,6 +46,8 @@ public class AlternativeFramework {
     private static long iFieldOffset;
 
     public static Field nativePeerField;
+    
+    public static Class<?> VMRuntimeClass  =null;
 
     static{
         try {
@@ -90,10 +93,12 @@ public class AlternativeFramework {
             //get value
             addressSize = unsafe.addressSize();
             methodPageSize = unsafe.getLong(second, artMethodOffset) - unsafe.getLong(first, artMethodOffset);
-
+            
+            VMRuntimeClass = Class.forName("dalvik.system.VMRuntime");
+            
             //Android 9 Permission Restrictions
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                long methods_VMRuntime = unsafe.getLong(VMRuntime.class, methodsOffset);
+                long methods_VMRuntime = unsafe.getLong(VMRuntimeClass, methodsOffset);
                 //method size
                 long count = addressSize == 8 ? u.getLong(methods_VMRuntime) : u.getInt(methods_VMRuntime);
                 methods_VMRuntime += addressSize;
@@ -102,7 +107,7 @@ public class AlternativeFramework {
                     unsafe.putLong(first, artMethodOffset, method);
                     String name = first.getName();
                     if (!"setHiddenApiExemptions".equals(name)) continue;
-                    first.invoke(VMRuntime.getRuntime(), new Object[] {new String[] {"L","Landroid/","Ljava/lang/","Ldalvik/system/"}});
+                    first.invoke(getRuntime(), new Object[] {new String[] {"L","Landroid/","Ljava/lang/","Ldalvik/system/"}});
                     break;
                 }
             }
@@ -206,10 +211,13 @@ public class AlternativeFramework {
             if (parame.length > 1) 
                 parameterTypes = Arrays.copyOf(parame, parame.length - 1, Class[].class);
             Constructor origin = declaringClass.getDeclaredConstructor(parameterTypes);
-            Class<?> stubClass = generateHookStub.generateConstructor(origin);
-
-            Member hook = stubClass.getDeclaredConstructor(parameterTypes);
+            Member hook = generateHookStub.generateConstructor(origin);
             Method back = StubMethod.getStubMethod();
+            
+            int flags = getMemberFlags(hook);
+            flags |= ArtMethodFlags.kConstructor;
+            setMemberFlags(hook, flags);
+           
             hookBase(HookMode.ADDSTUB, origin, hook, back, parameterTypes, listener);
         } catch (Exception e) {
             e.printStackTrace();
@@ -396,9 +404,20 @@ public class AlternativeFramework {
     }
 
     public static boolean is64Bit() {
-        return VMRuntime.getRuntime().is64Bit();
+        try{
+        Method method = HiddenApiBypass.getDeclaredMethod(VMRuntimeClass, "is64Bit");
+        return (boolean)method.invoke(getRuntime());
+        }catch(Exception e){
+            e.printStackTrace();
+            return true;
+        }
     }
 
+
+    public static Object getRuntime() throws Exception {
+        Method method = HiddenApiBypass.getDeclaredMethod(VMRuntimeClass, "getRuntime");
+        return method.invoke(null);
+    }
 
     /* field */
     
@@ -440,7 +459,17 @@ public class AlternativeFramework {
     public static Object getFieldValue(Object object, String field) {
         return getFieldValue(object, object.getClass(), field);
     }
+    
+    public static int getMemberFlags(Member method){
+        return unsafe.getInt(getArtMethod(method)+4);
+    }
+    
+    public static void setMemberFlags(Member method, int flags){
+        unsafe.putInt(getArtMethod(method)+4, flags);
+    }
 
+    
+    
     /* unHook */
 
     public static class Unhook {

@@ -19,8 +19,6 @@ package dev.answer.alternative.utils;
 import android.os.Build;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.MethodHandles;
@@ -37,7 +35,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import dalvik.system.VMRuntime;
 import sun.misc.Unsafe;
 
 public final class HiddenApiBypass {
@@ -57,8 +54,11 @@ public final class HiddenApiBypass {
     private static final long artFieldBias;
     private static final Set<String> signaturePrefixes = new HashSet<>();
 
+    private static Class<?> VMRuntimeClass = null;
+
     static {
         try {
+            
             //noinspection JavaReflectionMemberAccess DiscouragedPrivateApi
             unsafe = (Unsafe) Unsafe.class.getDeclaredMethod("getUnsafe").invoke(null);
             assert unsafe != null;
@@ -94,6 +94,9 @@ public final class HiddenApiBypass {
             artFieldSize = jAddr - iAddr;
             
             artFieldBias = iAddr - iFields;
+            
+            VMRuntimeClass = Class.forName("dalvik.system.VMRuntime");
+            
         } catch (ReflectiveOperationException e) {
             Log.e(TAG, "Initialize error", e);
             throw new ExceptionInInitializerError(e);
@@ -126,7 +129,7 @@ public final class HiddenApiBypass {
      * @return the new instance
      * @see Constructor#newInstance(Object...)
      */
-    public static Object newInstance(@NonNull Class<?> clazz, Object... initargs) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static Object newInstance( Class<?> clazz, Object... initargs) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Method stub = Helper.InvokeStub.class.getDeclaredMethod("invoke", Object[].class);
         Constructor<?> ctor = Helper.InvokeStub.class.getDeclaredConstructor(Object[].class);
         ctor.setAccessible(true);
@@ -159,7 +162,7 @@ public final class HiddenApiBypass {
      * @return the return value of the method
      * @see Method#invoke(Object, Object...)
      */
-    public static Object invoke(@NonNull Class<?> clazz, @Nullable Object thiz, @NonNull String methodName, Object... args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public static Object invoke(Class<?> clazz, Object thiz,  String methodName, Object... args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         if (thiz != null && !clazz.isInstance(thiz)) {
             throw new IllegalArgumentException("this object is not an instance of the given class");
         }
@@ -188,8 +191,8 @@ public final class HiddenApiBypass {
      * @param clazz the class to fetch declared methods (including constructors with name `&lt;init&gt;`)
      * @return list of declared methods of {@code clazz}
      */
-    @NonNull
-    public static List<Executable> getDeclaredMethods(@NonNull Class<?> clazz) {
+    
+    public static List<Executable> getDeclaredMethods( Class<?> clazz) {
         ArrayList<Executable> list = new ArrayList<>();
         if (clazz.isPrimitive() || clazz.isArray()) return list;
         MethodHandle mh;
@@ -230,8 +233,8 @@ public final class HiddenApiBypass {
      * @throws NoSuchMethodException when no method matches the given parameters
      * @see Class#getDeclaredMethod(String, Class[]) 
      */
-    @NonNull
-    public static Method getDeclaredMethod(@NonNull Class<?> clazz, @NonNull String methodName, @NonNull Class<?>... parameterTypes) throws NoSuchMethodException {
+    
+    public static Method getDeclaredMethod( Class<?> clazz,  String methodName,  Class<?>... parameterTypes) throws NoSuchMethodException {
         List<Executable> methods = getDeclaredMethods(clazz);
         allMethods:
         for (Executable method : methods) {
@@ -256,8 +259,8 @@ public final class HiddenApiBypass {
      * @throws NoSuchMethodException when no constructor matches the given parameters
      * @see Class#getDeclaredConstructor(Class[])
      */
-    @NonNull
-    public static Constructor<?> getDeclaredConstructor(@NonNull Class<?> clazz, @NonNull Class<?>... parameterTypes) throws NoSuchMethodException {
+    
+    public static Constructor<?> getDeclaredConstructor( Class<?> clazz,  Class<?>... parameterTypes) throws NoSuchMethodException {
         List<Executable> methods = getDeclaredMethods(clazz);
         allMethods:
         for (Executable method : methods) {
@@ -279,8 +282,8 @@ public final class HiddenApiBypass {
      * @param clazz the class to fetch declared methods
      * @return list of declared non-static fields of {@code clazz}
      */
-    @NonNull
-    public static List<Field> getInstanceFields(@NonNull Class<?> clazz) {
+    
+    public static List<Field> getInstanceFields( Class<?> clazz) {
         ArrayList<Field> list = new ArrayList<>();
         if (clazz.isPrimitive() || clazz.isArray()) return list;
         MethodHandle mh;
@@ -317,8 +320,8 @@ public final class HiddenApiBypass {
      * @param clazz the class to fetch declared methods
      * @return list of declared static fields of {@code clazz}
      */
-    @NonNull
-    public static List<Field> getStaticFields(@NonNull Class<?> clazz) {
+    
+    public static List<Field> getStaticFields( Class<?> clazz) {
         ArrayList<Field> list = new ArrayList<>();
         if (clazz.isPrimitive() || clazz.isArray()) return list;
         MethodHandle mh;
@@ -357,10 +360,10 @@ public final class HiddenApiBypass {
      *                          the whitelist: access permitted, and no logging..
      * @return whether the operation is successful
      */
-    public static boolean setHiddenApiExemptions(@NonNull String... signaturePrefixes) {
+    public static boolean setHiddenApiExemptions( String... signaturePrefixes) {
         try {
-            Object runtime = invoke(VMRuntime.class, null, "getRuntime");
-            invoke(VMRuntime.class, runtime, "setHiddenApiExemptions", (Object) signaturePrefixes);
+            Object runtime = invoke(VMRuntimeClass, null, "getRuntime");
+            invoke(VMRuntimeClass, runtime, "setHiddenApiExemptions", (Object) signaturePrefixes);
             return true;
         } catch (Throwable e) {
             Log.w(TAG, "setHiddenApiExemptions", e);

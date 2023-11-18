@@ -14,10 +14,9 @@
 - There are many issues with this framework, please provide me with suggestions.
 - You can send an email to `nswera929@gmail.com` or create issues
 
-- Note : The Constructor is currently unable to hook, which may be limited by the principles of this framework 
-
 ## Usage
-Example 1: 
+
+Example Hook Method: 
 ```java
 AlternativeFramework.addStubAndHookMethod(Toast.class, "makeText", Context.class, CharSequence.class, int.class, 
 new MethodHook(){
@@ -30,6 +29,21 @@ new MethodHook(){
         @Override
         public void afterMethod(MethodHookParam params) {
             Log.i(TAG, "After " + params.thisObject);
+        }
+});
+```
+
+Example Hook Constructor:
+```java
+AlternativeFramework.addStubAndHookConstructor(MainActivity.class, String.class,  new MethodHook(){
+        @Override
+        public void beforeMethod(MethodHookParam params) {
+            Log.d(TAG, "This before");
+        }
+        
+        @Override
+        public void afterMethod(MethodHookParam params) {
+            Log.d(TAG, "This after");
         }
 });
 ```
