@@ -16,7 +16,7 @@
 
 ## Usage
 
-Example Hook Method: 
+- Example Hook Method: 
 ```java
 AlternativeFramework.addStubAndHookMethod(Toast.class, "makeText", Context.class, CharSequence.class, int.class, 
 new MethodHook(){
@@ -33,7 +33,7 @@ new MethodHook(){
 });
 ```
 
-Example Hook Constructor:
+- Example Hook Constructor:
 ```java
 AlternativeFramework.addStubAndHookConstructor(MainActivity.class, String.class,  new MethodHook(){
         @Override
