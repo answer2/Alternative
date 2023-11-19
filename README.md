@@ -11,6 +11,8 @@
 
 - Alternative is a dynamic java method hook framework on ART runtime
 
+- Due to the limitations of framework principles, the method of hook may not be able to be called properly if it is super called in other classes
+
 - There are many issues with this framework, please provide me with suggestions.
 - You can send an email to `nswera929@gmail.com` or create issues
 

@@ -169,7 +169,7 @@ public class generateHookStub {
         DexMaker dexMaker = new DexMaker();
 
         TypeId<?> declaringType = TypeId.get("Ldev/answer/alternative/framework/" + method.getName() + "$stub;");
-        dexMaker.declare(declaringType, method.getName() + "$stub.generated", Modifier.PUBLIC, TypeId.OBJECT);
+        dexMaker.declare(declaringType, method.getName() + "$stub.generated", Modifier.PUBLIC, TypeId.get(method.getDeclaringClass()));
 
         TypeId<?> HookStubManagerType = TypeId.get(HookStubManager.class);
         TypeId<?> ClassesType = TypeId.get(Class[].class);
@@ -260,10 +260,10 @@ public class generateHookStub {
 
         byte[] bufs = dexMaker.generate();
 
-        /*
+        
          FileOutputStream foss = new java.io.FileOutputStream("/sdcard/Download/dd.dex");
          foss.write(bufs);
-         foss.close();*/
+         foss.close();
 
         generateHookStub instance = new generateHookStub();
 

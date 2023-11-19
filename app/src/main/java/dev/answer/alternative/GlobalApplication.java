@@ -1,5 +1,6 @@
 package dev.answer.alternative;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -17,6 +18,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -24,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.widget.NestedScrollView;
 import com.google.android.material.textview.MaterialTextView;
+import dev.answer.alternative.callback.MethodHook;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -48,6 +51,20 @@ public class GlobalApplication extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
+        /*
+        AlternativeFramework.addStubAndHookMethod(Activity.class, "setContentView", View.class, 
+            new MethodHook(){
+                    @Override
+                    public void beforeMethod(MethodHookParam params) {
+                        System.out.println(Arrays.toString(params.args));
+                    
+                    }
+
+                    @Override
+                    public void afterMethod(MethodHookParam params) {
+                    
+                    }
+            });*/
     CrashHandler.getInstance().registerGlobal(this);
     //CrashHandler.getInstance().registerPart(this);
   }
