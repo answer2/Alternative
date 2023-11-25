@@ -12,6 +12,7 @@
 - Alternative is a dynamic java method hook framework on ART runtime
 
 - Due to the limitations of framework principles, the method of hook may not be able to be called properly if it is super called in other classes
+- This framework is based on the replacement implementation of ArtMethod. For specific ArtMethodData, you can refer to the class name `dev.answer.alternative.utils.ArtMethodData` below
 
 - There are many issues with this framework, please provide me with suggestions.
 - You can send an email to `nswera929@gmail.com` or create issues

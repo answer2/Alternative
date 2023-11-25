@@ -8,6 +8,7 @@ import dev.answer.alternative.stub.HookStubManager;
 import dev.answer.alternative.stub.StubClass;
 import dev.answer.alternative.stub.StubMethod;
 import dev.answer.alternative.utils.AlternativeException;
+import dev.answer.alternative.utils.ArtMethodData;
 import dev.answer.alternative.utils.ArtMethodFlags;
 import dev.answer.alternative.utils.HookLog;
 import dev.answer.alternative.utils.MethodUtils;
@@ -467,8 +468,26 @@ public class AlternativeFramework {
     public static void setMemberFlags(Member method, int flags){
         unsafe.putInt(getArtMethod(method)+4, flags);
     }
-
     
+    // Method to ArtMethod Data
+
+    public static ArtMethodData getArtMethodData(Method m) {
+        ArtMethodData data = new ArtMethodData();
+        for (int i= 0; i < methodPageSize;i++) {
+            data.addValue(i, unsafe.getLong(getArtMethod(m) + i));
+        }
+
+        return data;
+    }
+    
+    public static ArtMethodData getArtMethodData_Int(Method m) {
+        ArtMethodData data = new ArtMethodData();
+        for (int i= 0; i < methodPageSize;i++) {
+            data.addValue(i, unsafe.getLong(getArtMethod(m) + i));
+        }
+
+        return data;
+    }
     
     /* unHook */
 
